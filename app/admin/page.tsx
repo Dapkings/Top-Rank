@@ -39,24 +39,31 @@ export default function AdminDashboard() {
     muatDataAdmin();
   }, []);
 
-  const handleAksiVerifikasi = async (id: number, statusBaru: 'APPROVED' | 'REJECTED') => {
-    try {
-      const res = await fetch(`/api/admin/verifikasi`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: statusBaru })
-      });
-      const hasil = await res.json();
-      if (hasil.success) {
-        alert(`Berhasil merubah status menjadi ${statusBaru}!`);
-        await muatDataAdmin();
-      } else {
-        alert(hasil.error || 'Gagal mengubah status.');
-      }
-    } catch (err) {
-      alert('Terjadi kesalahan jaringan.');
+  const handleAksiVerifikasi = async (id: any, statusBaru: 'APPROVED' | 'REJECTED') => {
+  try {
+    // URL disesuaikan dengan struktur foldermu: app/api/admin/route.ts
+    const res = await fetch('/api/admin', {
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        id: Number(id), 
+        status: statusBaru 
+      })
+    });
+
+    const hasil = await res.json();
+
+    if (hasil.success) {
+      alert(`Berhasil merubah status menjadi ${statusBaru}!`);
+      await muatDataAdmin();
+    } else {
+      alert(hasil.error || 'Gagal mengubah status.');
     }
-  };
+  } catch (err) {
+    console.error(err);
+    alert('Terjadi kesalahan jaringan atau server mati.');
+  }
+};
 
   const mahasiswaTerfilter = daftarMahasiswa.filter((mhs: any) => {
     const kueri = kataKunci.toLowerCase();
