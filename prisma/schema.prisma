@@ -1,0 +1,38 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          Int         @id @default(autoincrement())
+  nama        String
+  email       String      @unique
+  role        String      // "MAHASISWA" atau "ADMIN"
+  nim         String?
+  jurusan     String?
+  angkatan    Int?
+  totalPoin   Int         @default(0)
+  pengajuan   Pengajuan[]
+}
+
+model Pengajuan {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  tipe        String   // "SERTIFIKAT" atau "PORTFOLIO"
+  kategori    String   
+  judul       String   
+  status      String   @default("PENDING")
+  poinDidapat Int      @default(0)
+}
+
+model Reward {
+  id             Int    @id @default(autoincrement())
+  namaReward     String 
+  poinDibutuhkan Int    
+  stok           Int
+}

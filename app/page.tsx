@@ -1,65 +1,143 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function LandingLoginPage() {
+  const router = useRouter();
+  
+  // State untuk melacak role apa yang sedang dipilih untuk login
+  const [selectedRole, setSelectedRole] = useState<'MAHASISWA' | 'ADMIN' | null>(null);
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorPesan, setErrorPesan] = useState('');
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return alert('Silakan masukkan email Anda!');
+    
+    setLoading(true);
+    setErrorPesan('');
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const hasil = await response.json();
+
+      if (hasil.success) {
+        // Simpan sesi login lokal sederhana
+        localStorage.setItem('userRole', hasil.user.role);
+        localStorage.setItem('userEmail', hasil.user.email);
+
+        // Arahkan ke dashboard yang sesuai (Fitur 1 Admin/Mahasiswa)
+        if (hasil.user.role === 'ADMIN') {
+          router.push('/admin');
+        } else {
+          router.push('/mahasiswa');
+        }
+      } else {
+        setErrorPesan(hasil.error || 'Login gagal, periksa email Anda.');
+      }
+    } catch (err) {
+      setErrorPesan('Gagal terhubung ke server.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      
+      {/* BACKGROUND GLOW EFFECT (Biar mirip style di gambar) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <div className="w-full max-w-2xl text-center z-10 space-y-6">
+        
+        {/* TAG BADGE */}
+        <div className="inline-block bg-blue-950/60 border border-blue-800/40 text-blue-400 text-xs font-semibold px-4 py-1.5 rounded-full shadow-inner">
+          TopRank Logic AI Development #3
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+        {/* JUDUL UTAMA */}
+        <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight leading-none">
+          University Talent <br />
+          <span className="bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Hub</span>
+        </h1>
+
+        {/* DESKRIPSI */}
+        <p className="text-sm md:text-base text-slate-400 max-w-lg mx-auto leading-relaxed">
+          Ekosistem berbasis <span className="text-amber-400 font-semibold">Gamifikasi</span> untuk memetakan, mengembangkan, dan mempertemukan talenta mahasiswa dengan berbagai peluang.
+        </p>
+
+        {/* JIKA BELUM PILIH ROLE: TAMPILKAN DUA TOMBOL UTAMA */}
+        {selectedRole === null ? (
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            <button 
+              onClick={() => setSelectedRole('MAHASISWA')}
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20 active:scale-98 cursor-pointer"
+            >
+              Masuk sebagai Mahasiswa
+            </button>
+            <button 
+              onClick={() => setSelectedRole('ADMIN')}
+              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-semibold px-6 py-3.5 rounded-xl text-sm transition-all active:scale-98 cursor-pointer"
+            >
+              Masuk sebagai Administrator
+            </button>
+          </div>
+        ) : (
+          /* JIKA TOMBOL DIKLIK: TAMPILKAN FORM LOGIN INPUT */
+          <div className="max-w-md mx-auto bg-slate-900/80 border border-slate-800 p-6 rounded-2xl shadow-2xl backdrop-blur-sm text-left animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-sm text-slate-200">
+                Login Gateway: <span className="text-blue-400">{selectedRole}</span>
+              </h3>
+              <button 
+                onClick={() => { setSelectedRole(null); setErrorPesan(''); }} 
+                className="text-xs text-slate-500 hover:text-slate-300 transition-all"
+              >
+                ← Kembali
+              </button>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Masukkan Email Valid Akun Anda
+                </label>
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={selectedRole === 'ADMIN' ? "Contoh: superadmin@kampus.com" : "Contoh: andi@mahasiswa.com"} 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-blue-500 transition-all"
+                  autoFocus
+                  required
+                />
+              </div>
+
+              {errorPesan && (
+                <p className="text-xs font-medium text-red-400 bg-red-500/10 border border-red-500/20 p-2.5 rounded-lg text-center">
+                  {errorPesan}
+                </p>
+              )}
+
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition-all disabled:opacity-40 cursor-pointer"
+              >
+                {loading ? 'Menghubungkan Sesi...' : `Autentikasi ${selectedRole} 🚀`}
+              </button>
+            </form>
+          </div>
+        )}
+
+      </div>
+    </main>
   );
 }
