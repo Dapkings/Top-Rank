@@ -69,21 +69,23 @@ export default function DashboardMahasiswa() {
       const hasil = await res.json();
       
       if (hasil.success) {
-        setTotalPoin(hasil.totalPoin || 0);
-        setRiwayat(hasil.riwayatPengajuan || []);
-        setLeaderboardData(hasil.leaderboard || []);
-        
-        // JIKA USER SUDAH PERNAH ISI PROFIL DI DATABASE
-        if (hasil.nim || hasil.nama) {
-          setNama(hasil.nama || '');
-          setNim(hasil.nim || '');
-          setJurusan(hasil.jurusan || '');
-          setAngkatan(String(hasil.angkatan || ''));
-          setProfilSelesai(true); // Mengunci form secara permanen meskipun di-refresh
-        } else {
-          setProfilSelesai(false);
-        }
-      }
+  setTotalPoin(hasil.totalPoin || 0);
+  setRiwayat(hasil.riwayatPengajuan || []);
+  setLeaderboardData(hasil.leaderboard || []);
+  
+  // Ambil data nama dari database jika ada, jika tidak ada pakai inputan kosong
+  setNama(hasil.nama || '');
+  setNim(hasil.nim || '');
+  setJurusan(hasil.jurusan || '');
+  setAngkatan(String(hasil.angkatan || ''));
+
+  // 🛠️ PERBAIKAN: Form HANYA mengunci jika NIM sudah terisi di database
+  if (hasil.nim) {
+    setProfilSelesai(true); 
+  } else {
+    setProfilSelesai(false); // Form tetap terbuka jika NIM masih kosong
+  }
+}
     } catch (err) {
       console.error('Gagal memuat data sinkronisasi dashboard:', err);
     }
