@@ -122,7 +122,7 @@ export default function DashboardMahasiswa() {
         // Perbarui email di localStorage untuk memastikan sinkronisasi sesi berikutnya aman
         localStorage.setItem('userEmail', email.trim());
         alert('✅ Profil sukses disimpan ke database & fitur pengajuan terbuka!');
-        await muatDataDashboard(); // Reload data terbaru
+
       } else {
         alert(hasil.error || 'Gagal menyimpan data profil.');
       }
